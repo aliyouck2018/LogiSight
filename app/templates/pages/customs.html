@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Douane</h1>
+        <div class="subtitle">Performance des déclarations et dédouanement</div>
+    </div>
+</div>
+
+<div class="filter-bar">
+    <input type="date" id="f-start" aria-label="Date de début">
+    <input type="date" id="f-end" aria-label="Date de fin">
+</div>
+
+<section class="kpi-grid" id="customs-kpis"></section>
+
+<section class="chart-grid cols-2">
+    <div class="card">
+        <div class="card-header"><h3>Délai moyen de dédouanement</h3></div>
+        <div class="chart-body" id="chart-clearance-trend"></div>
+    </div>
+    <div class="card">
+        <div class="card-header"><h3>Taux de dépassement SLA</h3></div>
+        <div class="chart-body" id="chart-breach-rate"></div>
+    </div>
+</section>
+
+<section class="chart-grid cols-2" style="margin-bottom:16px">
+    <div class="card">
+        <div class="card-header"><h3>Délai par type de marchandise</h3></div>
+        <div class="chart-body" id="chart-by-cargo"></div>
+    </div>
+    <div class="card">
+        <div class="card-header"><h3>Délai par destination</h3></div>
+        <div class="chart-body" id="chart-by-dest"></div>
+    </div>
+</section>
+
+<div class="card">
+    <div class="card-header"><h3>Déclarations en dépassement de SLA</h3></div>
+    <div id="breaches-table"></div>
+    <div id="breaches-pagination"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/customs.js') }}"></script>
+{% endblock %}

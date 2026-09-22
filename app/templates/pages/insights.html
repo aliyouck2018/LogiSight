@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Insights de gestion</h1>
+        <div class="subtitle">Analyses et recommandations générées automatiquement</div>
+    </div>
+</div>
+
+<section class="chart-grid cols-2" id="insights-list">
+    <div class="card"><div class="state"><div class="spinner"></div></div></div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/insights.js') }}"></script>
+{% endblock %}

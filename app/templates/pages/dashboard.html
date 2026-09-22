@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Tableau de bord</h1>
+        <div class="subtitle">Aperçu des opérations logistiques et des performances clés</div>
+    </div>
+    <div class="last-updated" id="last-updated">Dernière mise à jour : —</div>
+</div>
+
+<!-- ======== Filtres globaux ======== -->
+<div class="filter-bar" id="dashboard-filters">
+    <input type="date" id="f-start" aria-label="Date de début">
+    <input type="date" id="f-end" aria-label="Date de fin">
+    <select id="f-origin" aria-label="Origine"><option value="">Toutes les origines</option></select>
+    <select id="f-dest" aria-label="Destination"><option value="">Toutes les destinations</option></select>
+    <select id="f-customer" aria-label="Client"><option value="">Tous les clients</option></select>
+    <select id="f-cargo" aria-label="Type de marchandise"><option value="">Tous les types de marchandise</option></select>
+    <select id="f-status" aria-label="Statut"><option value="">Tous les statuts</option></select>
+</div>
+
+<!-- ======== KPI ======== -->
+<section class="kpi-grid" id="kpi-grid" aria-label="Indicateurs clés">
+    <div class="card kpi-card"><div class="state"><div class="spinner"></div></div></div>
+    <div class="card kpi-card"><div class="state"><div class="spinner"></div></div></div>
+    <div class="card kpi-card"><div class="state"><div class="spinner"></div></div></div>
+    <div class="card kpi-card"><div class="state"><div class="spinner"></div></div></div>
+</section>
+
+<!-- ======== Charts row 2 ======== -->
+<section class="chart-grid span-2-1-1">
+    <div class="card">
+        <div class="card-header"><h3>Volume d'expéditions</h3></div>
+        <div class="chart-body" id="chart-volume"><div class="state"><div class="spinner"></div></div></div>
+    </div>
+    <div class="card">
+        <div class="card-header"><h3>Taux de livraison à temps (OTD)</h3></div>
+        <div class="chart-body" id="chart-otd"><div class="state"><div class="spinner"></div></div></div>
+    </div>
+    <div class="card">
+        <div class="card-header"><h3>Réseau logistique</h3></div>
+        <div class="chart-body" id="map-network"><div class="state"><div class="spinner"></div></div></div>
+    </div>
+</section>
+
+<!-- ======== Charts row 3 ======== -->
+<section class="chart-grid cols-3">
+    <div class="card">
+        <div class="card-header"><h3>Statut des expéditions</h3></div>
+        <div class="chart-body" id="chart-status"><div class="state"><div class="spinner"></div></div></div>
+    </div>
+    <div class="card">
+        <div class="card-header"><h3>Causes des retards</h3></div>
+        <div class="chart-body" id="chart-causes"><div class="state"><div class="spinner"></div></div></div>
+    </div>
+    <div class="card">
+        <div class="card-header"><h3>Performance par route</h3></div>
+        <div class="chart-body" id="chart-routes"><div class="state"><div class="spinner"></div></div></div>
+    </div>
+</section>
+
+<!-- ======== Row 4 : tables & panels ======== -->
+<section class="chart-grid span-2-1">
+    <div class="card">
+        <div class="card-header">
+            <h3>Expéditions récentes</h3>
+            <a class="link" href="/shipments">Voir tout →</a>
+        </div>
+        <div id="recent-shipments"><div class="state"><div class="spinner"></div></div></div>
+    </div>
+    <div class="card">
+        <div class="card-header">
+            <h3>Alertes critiques</h3>
+            <a class="link" href="/alerts">Voir tout →</a>
+        </div>
+        <div class="item-list" id="critical-alerts"><div class="state"><div class="spinner"></div></div></div>
+    </div>
+</section>
+
+<section class="chart-grid">
+    <div class="card">
+        <div class="card-header">
+            <h3>Insights de gestion</h3>
+            <a class="link" href="/insights">Voir tout →</a>
+        </div>
+        <div class="item-list" id="management-insights"><div class="state"><div class="spinner"></div></div></div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

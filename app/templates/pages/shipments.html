@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Expéditions</h1>
+        <div class="subtitle">Suivi et recherche des expéditions</div>
+    </div>
+</div>
+
+<div class="filter-bar" id="shipments-filters">
+    <input type="search" id="f-q" placeholder="Rechercher (ID, client, ville)…" style="min-width:220px" aria-label="Recherche">
+    <input type="date" id="f-start" aria-label="Date de début">
+    <input type="date" id="f-end" aria-label="Date de fin">
+    <select id="f-origin" aria-label="Origine"><option value="">Toutes les origines</option></select>
+    <select id="f-dest" aria-label="Destination"><option value="">Toutes les destinations</option></select>
+    <select id="f-cargo" aria-label="Type de marchandise"><option value="">Tous les types</option></select>
+    <select id="f-status" aria-label="Statut"><option value="">Tous les statuts</option></select>
+    <select id="f-sort" aria-label="Tri">
+        <option value="planned_departure">Tri : départ</option>
+        <option value="planned_arrival">Tri : ETA</option>
+        <option value="delay_hours">Tri : retard</option>
+        <option value="risk_score">Tri : risque</option>
+        <option value="cost">Tri : coût</option>
+    </select>
+</div>
+
+<div class="card">
+    <div id="shipments-table"><div class="state"><div class="spinner"></div>Chargement des expéditions…</div></div>
+    <div id="shipments-pagination"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/shipments.js') }}"></script>
+{% endblock %}

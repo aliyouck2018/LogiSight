@@ -1,0 +1,81 @@
+# Configuration de déploiement manuel — LogiSight
+#
+# Déploiement SANS Docker sur un hôte Python standard.
+# Services : db (SQLite fichier) + web (Gunicorn derrière un port local).
+#
+# Utilisation :
+#   1. Copier .env.example vers .env et renseigner SECRET_KEY
+#   2. make setup
+#   3. .venv/bin/gunicorn -w 4 -b 0.0.0.0:8000 run:app
+
+application:
+  name: logisight
+  root: /opt/logisight            # répertoire d'installation
+  user: logisight                 # utilisateur système dédié (non root)
+  python: "3.12"                  # 3.12 ou supérieur
+
+services:
+  db:
+    engine: sqlite
+    path: "{{ application.root }}/data/logisight.db"
+    persistence:
+      # Le fichier SQLite DOIT persister dans data/ et ne jamais être committé.
+      directory: "{{ application.root }}/data"
+      backup_command: "sqlite3 {{ application.root }}/data/logisight.db '.backup {{ application.root }}/data/backups/logisight-$(date +%F).db'"
+      backup_schedule: daily
+    readiness:
+      # L'application attend la disponibilité de la base au démarrage
+      # (SQLAlchemy pool_pre_ping + retry à l'initialisation).
+      check: "sqlite3 {{ application.root }}/data/logisight.db 'SELECT 1;'"
+
+  web:
+    wsgi: run:app
+    server: gunicorn
+    workers: 4
+    bind: "0.0.0.0:8000"
+    timeout: 60
+    environment_file: "{{ application.root }}/.env"
+    systemd_unit: |
+      [Unit]
+      Description=LogiSight web application
+      After=network.target
+
+      [Service]
+      User=logisight
+      WorkingDirectory=/opt/logisight
+      EnvironmentFile=/opt/logisight/.env
+      ExecStart=/opt/logisight/.venv/bin/gunicorn -w 4 -b 0.0.0.0:8000 run:app
+      Restart=on-failure
+
+      [Install]
+      WantedBy=multi-user.target
+
+  # nginx est OPTIONNEL — uniquement si un reverse proxy est déjà disponible.
+  nginx:
+    enabled: false
+    server_name: logisight.example.com
+    proxy_pass: "http://127.0.0.1:8000"
+    static_root: "{{ application.root }}/app/static"
+
+variables_environnement:
+  FLASK_ENV: production
+  SECRET_KEY: "<générer : python -c 'import secrets; print(secrets.token_hex(32))'>"
+  DATABASE_URL: "sqlite:///data/logisight.db"
+  SEED: "42"
+  N_SHIPMENTS: "20000"
+  N_MONTHS: "24"
+
+etapes_deploiement:
+  - "git clone <repo> {{ application.root }}"
+  - "cd {{ application.root }} && python3 -m venv .venv"
+  - ".venv/bin/pip install -r requirements.txt"
+  - "cp .env.example .env  # renseigner SECRET_KEY"
+  - "mkdir -p data && .venv/bin/flask --app run.py db upgrade"
+  - ".venv/bin/python scripts/generate_data.py"
+  - ".venv/bin/python scripts/generate_alerts.py"
+  - "systemctl enable --now logisight"
+
+contraintes:
+  - "Aucun Docker / docker-compose : déploiement 100 % manuel."
+  - "La base SQLite n'est jamais committée (voir .gitignore)."
+  - "Sauvegarde quotidienne du fichier SQLite recommandée."

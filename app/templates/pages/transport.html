@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Transport</h1>
+        <div class="subtitle">Performance des tournées, véhicules et transporteurs</div>
+    </div>
+</div>
+
+<div class="filter-bar">
+    <input type="date" id="f-start" aria-label="Date de début">
+    <input type="date" id="f-end" aria-label="Date de fin">
+</div>
+
+<section class="kpi-grid" id="transport-kpis"></section>
+
+<section class="chart-grid cols-2">
+    <div class="card">
+        <div class="card-header"><h3>Durée planifiée vs réelle</h3></div>
+        <div class="chart-body" id="chart-pva"></div>
+    </div>
+    <div class="card">
+        <div class="card-header"><h3>Distribution des retards</h3></div>
+        <div class="chart-body" id="chart-delays"></div>
+    </div>
+</section>
+
+<section class="chart-grid cols-3" style="margin-bottom:16px">
+    <div class="card">
+        <div class="card-header"><h3>Performance par route</h3></div>
+        <div class="chart-body" id="chart-routes"></div>
+    </div>
+    <div class="card">
+        <div class="card-header"><h3>Performance véhicules</h3></div>
+        <div class="chart-body" id="chart-vehicles"></div>
+    </div>
+    <div class="card">
+        <div class="card-header"><h3>Performance transporteurs</h3></div>
+        <div class="chart-body" id="chart-transporters"></div>
+    </div>
+</section>
+
+<div class="card">
+    <div class="card-header"><h3>Tournées récentes</h3></div>
+    <div id="trips-table"></div>
+    <div id="trips-pagination"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/transport.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Rapports</h1>
+        <div class="subtitle">Génération et export de rapports opérationnels</div>
+    </div>
+</div>
+
+<div class="chart-grid cols-2">
+    <div class="card">
+        <div class="card-header"><h3>Nouveau rapport</h3></div>
+        <div class="card-body">
+            <form id="report-form">
+                <div style="margin-bottom:14px">
+                    <label class="kpi-label" for="report-type">Type de rapport</label>
+                    <select id="report-type" style="width:100%;height:38px;margin-top:4px;border:1px solid var(--color-border);border-radius:6px;padding:0 10px">
+                        <option value="executive">Rapport hebdomadaire de direction</option>
+                        <option value="shipments">Rapport de performance des expéditions</option>
+                        <option value="customs">Rapport de performance douane</option>
+                        <option value="transport">Rapport de performance transport</option>
+                        <option value="warehouse">Rapport de capacité entrepôts</option>
+                    </select>
+                </div>
+                <div style="display:flex;gap:12px;margin-bottom:14px">
+                    <div style="flex:1">
+                        <label class="kpi-label" for="f-start">Date de début</label>
+                        <input type="date" id="f-start" style="width:100%;height:38px;margin-top:4px;border:1px solid var(--color-border);border-radius:6px;padding:0 10px">
+                    </div>
+                    <div style="flex:1">
+                        <label class="kpi-label" for="f-end">Date de fin</label>
+                        <input type="date" id="f-end" style="width:100%;height:38px;margin-top:4px;border:1px solid var(--color-border);border-radius:6px;padding:0 10px">
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary" style="height:40px;padding:0 20px;border:none;border-radius:6px;background:var(--color-primary);color:#fff;cursor:pointer;font-weight:600">Générer l'aperçu</button>
+            </form>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header"><h3>Export</h3></div>
+        <div class="card-body">
+            <p class="kpi-label" style="margin-bottom:12px">Exportez le rapport courant dans le format souhaité :</p>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+                <button id="btn-csv" class="btn-primary" style="height:40px;padding:0 18px;border:none;border-radius:6px;background:var(--color-success);color:#fff;cursor:pointer;font-weight:600">CSV</button>
+                <button id="btn-xlsx" class="btn-primary" style="height:40px;padding:0 18px;border:none;border-radius:6px;background:var(--color-primary);color:#fff;cursor:pointer;font-weight:600">Excel</button>
+                <button id="btn-pdf" class="btn-primary" style="height:40px;padding:0 18px;border:none;border-radius:6px;background:var(--color-danger);color:#fff;cursor:pointer;font-weight:600">PDF</button>
+            </div>
+            <p class="kpi-label" id="export-status" style="margin-top:12px">Générez d'abord un aperçu du rapport.</p>
+        </div>
+    </div>
+</div>
+
+<div class="card" id="report-preview-card" style="display:none">
+    <div class="card-header"><h3>Aperçu du rapport</h3></div>
+    <div class="card-body" id="report-preview"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/reports.js') }}"></script>
+{% endblock %}

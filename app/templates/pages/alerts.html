@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Alertes opérationnelles</h1>
+        <div class="subtitle">Événements nécessitant une attention</div>
+    </div>
+    <button class="btn-primary" id="btn-regenerate" style="height:36px;padding:0 16px;border:none;border-radius:6px;background:var(--color-primary);color:#fff;cursor:pointer;font-weight:600">Régénérer les alertes</button>
+</div>
+
+<div class="filter-bar">
+    <select id="f-status" aria-label="Statut">
+        <option value="">Tous les statuts</option>
+        <option value="OPEN">Ouvertes</option>
+        <option value="ACKNOWLEDGED">Prises en compte</option>
+        <option value="RESOLVED">Résolues</option>
+    </select>
+    <select id="f-severity" aria-label="Sévérité">
+        <option value="">Toutes sévérités</option>
+        <option value="CRITICAL">Critique</option>
+        <option value="HIGH">Élevé</option>
+        <option value="WARNING">Avertissement</option>
+        <option value="INFO">Info</option>
+    </select>
+    <select id="f-type" aria-label="Catégorie">
+        <option value="">Toutes catégories</option>
+        <option value="CUSTOMS_DELAY">Retard douane</option>
+        <option value="TRANSPORT_DELAY">Retard transport</option>
+        <option value="DELIVERY_DELAY">Retard livraison</option>
+        <option value="WAREHOUSE_CAPACITY">Capacité entrepôt</option>
+        <option value="SLA_BREACH">Dépassement SLA</option>
+        <option value="ANOMALOUS_PERFORMANCE">Performance anormale</option>
+    </select>
+</div>
+
+<section class="kpi-grid" id="alert-counts"></section>
+
+<div class="card">
+    <div id="alerts-list"><div class="state"><div class="spinner"></div></div></div>
+    <div id="alerts-pagination"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/alerts.js') }}"></script>
+{% endblock %}

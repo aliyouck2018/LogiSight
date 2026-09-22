@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Détail expédition — <span id="shipment-id-label">{{ shipment_id }}</span></h1>
+        <div class="subtitle" id="shipment-subtitle">Chargement…</div>
+    </div>
+    <a class="link" href="/shipments">← Retour aux expéditions</a>
+</div>
+
+<div id="detail-error"></div>
+
+<!-- Résumé -->
+<section class="kpi-grid" id="detail-kpis"></section>
+
+<!-- Timeline -->
+<div class="card" style="margin-bottom:16px">
+    <div class="card-header"><h3>Chronologie logistique</h3></div>
+    <div class="card-body" id="timeline"><div class="state"><div class="spinner"></div></div></div>
+</div>
+
+<div class="chart-grid cols-2" style="margin-bottom:16px">
+    <div class="card">
+        <div class="card-header"><h3>Informations douanières</h3></div>
+        <div id="customs-info"><div class="state"><div class="spinner"></div></div></div>
+    </div>
+    <div class="card">
+        <div class="card-header"><h3>Informations transport</h3></div>
+        <div id="transport-info"><div class="state"><div class="spinner"></div></div></div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header"><h3>Mouvements d'entrepôt</h3></div>
+    <div id="warehouse-info"><div class="state"><div class="spinner"></div></div></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/shipment_detail.js') }}"></script>
+{% endblock %}

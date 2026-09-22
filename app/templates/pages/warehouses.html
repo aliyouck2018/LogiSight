@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Entrepôts</h1>
+        <div class="subtitle">Capacité, occupation et coûts de stockage</div>
+    </div>
+</div>
+
+<section class="kpi-grid" id="wh-kpis"></section>
+
+<section class="chart-grid cols-2">
+    <div class="card">
+        <div class="card-header"><h3>Taux d'occupation par entrepôt</h3></div>
+        <div class="chart-body" id="chart-utilization"></div>
+    </div>
+    <div class="card">
+        <div class="card-header"><h3>Durées de stockage</h3></div>
+        <div class="chart-body" id="chart-storage"></div>
+    </div>
+</section>
+
+<section class="chart-grid" style="margin-bottom:16px">
+    <div class="card">
+        <div class="card-header"><h3>Flux entrées / sorties (12 mois)</h3></div>
+        <div class="chart-body" id="chart-flows"></div>
+    </div>
+</section>
+
+<div class="card">
+    <div class="card-header"><h3>Inventaire des entrepôts</h3></div>
+    <div id="warehouses-table"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/warehouses.js') }}"></script>
+{% endblock %}

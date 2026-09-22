@@ -1,0 +1,89 @@
+/* ==========================================================================
+   LogiSight — Design Tokens
+   Centralized design system variables. All pages consume these tokens.
+   ========================================================================== */
+
+:root {
+    /* ---- Colors ---- */
+    --color-primary: #1e5eff;
+    --color-primary-dark: #1546c0;
+    --color-primary-light: #e8efff;
+
+    --color-sidebar: #0d1b3e;
+    --color-sidebar-hover: #16264f;
+    --color-sidebar-active: #1e5eff;
+    --color-sidebar-text: #9fb0d0;
+    --color-sidebar-text-active: #ffffff;
+
+    --color-background: #f3f5f9;
+    --color-surface: #ffffff;
+    --color-surface-alt: #f8fafc;
+
+    --color-text: #1a2333;
+    --color-muted: #6b7a90;
+    --color-border: #e3e8ef;
+
+    --color-success: #16a34a;
+    --color-success-bg: #e7f6ec;
+    --color-warning: #d97706;
+    --color-warning-bg: #fdf1df;
+    --color-danger: #dc2626;
+    --color-danger-bg: #fdeaea;
+    --color-info: #0284c7;
+    --color-info-bg: #e3f2fc;
+
+    /* Chart palette */
+    --chart-1: #1e5eff;
+    --chart-2: #16a34a;
+    --chart-3: #f59e0b;
+    --chart-4: #dc2626;
+    --chart-5: #7c3aed;
+    --chart-6: #0284c7;
+    --chart-7: #64748b;
+
+    /* ---- Typography ---- */
+    --font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --font-size-xs: 0.75rem;
+    --font-size-sm: 0.8125rem;
+    --font-size-md: 0.875rem;
+    --font-size-lg: 1rem;
+    --font-size-xl: 1.25rem;
+    --font-size-2xl: 1.5rem;
+    --font-size-3xl: 1.875rem;
+
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+
+    /* ---- Spacing ---- */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+
+    /* ---- Borders & radius ---- */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --border-width: 1px;
+
+    /* ---- Shadows ---- */
+    --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+    --shadow-md: 0 2px 8px rgba(16, 24, 40, 0.08);
+    --shadow-lg: 0 8px 24px rgba(16, 24, 40, 0.12);
+
+    /* ---- Layout ---- */
+    --sidebar-width: 232px;
+    --topbar-height: 60px;
+    --content-max-width: 1440px;
+    --control-height: 36px;
+
+    /* ---- Breakpoints (documentation only, media queries are raw) ----
+       tablet:  1024px
+       mobile:  768px
+    */
+}
