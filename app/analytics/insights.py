@@ -180,7 +180,7 @@ def generate_insights() -> list[dict]:
                func.sum(Trip.fuel_liters).label("fuel"))
         .join(Trip, Trip.vehicle_id == Vehicle.vehicle_id)
         .where(Trip.trip_status == "COMPLETED", Trip.fuel_liters.is_not(None))
-        .group_by(Vehicle.vehicle_id)
+        .group_by(Vehicle.id, Vehicle.vehicle_id, Vehicle.registration_number)
     ).all()
     effs = [(v, v.distance / v.fuel) for v in veh_rows if v.fuel]
     if len(effs) >= 5:

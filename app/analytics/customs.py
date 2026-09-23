@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import case, func, select
 
 from app import db
+from app.utils.sql import month_key
 from app.models import CustomsDeclaration, Shipment
 
 
@@ -77,7 +78,7 @@ def customs_trends(months: int = 12) -> dict:
     """Clearance time trend + SLA breaches by period."""
     end = datetime.now()
     start = end - timedelta(days=months * 31)
-    month = func.strftime("%Y-%m", CustomsDeclaration.declaration_date).label("month")
+    month = month_key(CustomsDeclaration.declaration_date).label("month")
     breach = case((CustomsDeclaration.sla_status == "BREACHED", 1), else_=0)
     rows = db.session.execute(
         select(month,

@@ -4,6 +4,7 @@ from __future__ import annotations
 from sqlalchemy import String, and_, case, func, select
 
 from app import db
+from app.utils.sql import month_key
 from app.models import CustomsDeclaration, Shipment, Trip, WarehouseTransaction
 
 
@@ -60,7 +61,7 @@ def route_monthly_stats(origin: str, destination: str, months: int = 12) -> dict
     delivered = case((Shipment.status.in_(["DELIVERED", "DELAYED"]), 1), else_=0)
     on_time = case(
         (and_(Shipment.actual_arrival.is_not(None), Shipment.actual_arrival <= Shipment.planned_arrival), 1), else_=0)
-    month = func.strftime("%Y-%m", Shipment.planned_departure).label("month")
+    month = month_key(Shipment.planned_departure).label("month")
     rows = db.session.execute(
         select(month, func.count(Shipment.id).label("n"),
                func.sum(delivered).label("d"), func.sum(on_time).label("o"))

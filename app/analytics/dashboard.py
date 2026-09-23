@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import and_, case, func, select
 
 from app import db
+from app.utils.sql import month_key
 from app.analytics.filters import (DEFAULT_RECENT_DAYS, parse_date,
                                    previous_window)
 from app.models import Customer, Shipment, Warehouse
@@ -176,7 +177,7 @@ def shipment_trends(args: dict, months: int = 12) -> dict:
     delivered = case((Shipment.status.in_(["DELIVERED", "DELAYED"]), 1), else_=0)
     on_time = case(
         (and_(Shipment.actual_arrival.is_not(None), Shipment.actual_arrival <= Shipment.planned_arrival), 1), else_=0)
-    month = func.strftime("%Y-%m", Shipment.planned_departure).label("month")
+    month = month_key(Shipment.planned_departure).label("month")
 
     rows = db.session.execute(
         select(month,
@@ -260,7 +261,7 @@ def route_performance(args: dict, limit: int = 8) -> dict:
 
 def customs_clearance_trend(args: dict, months: int = 12) -> dict:
     from app.models import CustomsDeclaration
-    month = func.strftime("%Y-%m", CustomsDeclaration.declaration_date).label("month")
+    month = month_key(CustomsDeclaration.declaration_date).label("month")
     end = datetime.now()
     start = end - timedelta(days=months * 31)
     breach = case((CustomsDeclaration.sla_status == "BREACHED", 1), else_=0)

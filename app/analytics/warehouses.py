@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import case, func, select
 
 from app import db
+from app.utils.sql import month_key
 from app.models import Warehouse, WarehouseTransaction
 
 
@@ -74,7 +75,7 @@ def storage_trends(months: int = 12) -> dict:
     """Monthly storage cost + in/out volumes."""
     end = datetime.now()
     start = end - timedelta(days=months * 31)
-    month = func.strftime("%Y-%m", WarehouseTransaction.transaction_date).label("month")
+    month = month_key(WarehouseTransaction.transaction_date).label("month")
     in_qty = case((WarehouseTransaction.transaction_type == "IN", WarehouseTransaction.quantity), else_=0)
     out_qty = case((WarehouseTransaction.transaction_type == "OUT", WarehouseTransaction.quantity), else_=0)
     rows = db.session.execute(

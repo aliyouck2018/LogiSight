@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import case, func, select
 
 from app import db
+from app.utils.sql import month_key
 from app.models import Trip, Vehicle
 
 COMPLETED = "COMPLETED"
@@ -117,7 +118,7 @@ def delay_distribution() -> dict:
 def planned_vs_actual_by_month(months: int = 12) -> dict:
     end = datetime.now()
     start = end - timedelta(days=months * 31)
-    month = func.strftime("%Y-%m", Trip.departure_time).label("month")
+    month = month_key(Trip.departure_time).label("month")
     rows = db.session.execute(
         select(month,
                func.avg(Trip.planned_duration_hours).label("planned"),
