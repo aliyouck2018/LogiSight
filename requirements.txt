@@ -4,6 +4,7 @@ Flask-Migrate>=4.0
 Flask-CORS>=4.0
 python-dotenv>=1.0
 SQLAlchemy>=2.0
+psycopg2-binary>=2.9
 pandas>=2.2
 numpy>=1.26
 Faker>=24.0
