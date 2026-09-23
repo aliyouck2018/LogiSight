@@ -5,7 +5,7 @@ Reports reuse the analytics engine — KPI logic is never duplicated.
 from __future__ import annotations
 
 import io
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from flask import Response, jsonify
 from sqlalchemy import select
@@ -46,18 +46,25 @@ def build_report(payload: dict) -> dict:
     args = {k: v for k, v in args.items() if v}
 
     period = _period_label(args.get("start_date"), args.get("end_date"))
+    extras: dict = {}
     kpis: list[dict] = []
     findings: list[str] = []
 
     if report_type == "executive":
+        if not args:
+            end = datetime.now().date()
+            start = end - timedelta(days=182)
+            args = {"start_date": start.isoformat(), "end_date": end.isoformat()}
         summary = dashboard_summary({**args, "status": None})
+        insights = generate_insights()
         for k in summary["kpis"]:
             kpis.append({"label": k["label"], "value": _fmt_value(k["value"]), "unit": ""})
         trends = shipment_trends(args, months=6)
         if trends["volume"]:
             findings.append(f"Volume sur 6 mois : {sum(trends['volume'])} expéditions.")
-        for i in generate_insights()[:4]:
+        for i in insights[:4]:
             findings.append(f"{i['title']} — {i['description']}")
+        extras = _executive_extras(summary, insights, args)
 
     elif report_type == "shipments":
         summary = dashboard_summary(args)
@@ -127,11 +134,13 @@ def build_report(payload: dict) -> dict:
 
     return {
         "title": REPORT_TITLES[report_type],
+        "report_type": report_type,
         "period": period,
         "generated_at": datetime.now().strftime("%d/%m/%Y %H:%M"),
         "kpis": kpis,
         "findings": findings,
         "alerts": alerts[:8],
+        **(extras if report_type == "executive" else {}),
     }
 
 
@@ -139,6 +148,110 @@ def db_alerts():
     return db.session.execute(
         select(Alert).where(Alert.status == "OPEN").limit(8)
     ).scalars().all()
+
+
+MOIS_FR = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet",
+           "août", "septembre", "octobre", "novembre", "décembre"]
+
+_BADGES = {
+    "otd_rate": ("PERFORMANCE", "red"),
+    "otd_trend": ("DÉGRADATION", "red"),
+    "volume": ("VOLUME", "blue"),
+    "customs_breach_rate": ("DOUANE", "amber"),
+    "warehouse_utilization": ("ENTREPÔT", "navy"),
+    "route_otd": ("CORRIDOR", "red"),
+    "fuel_efficiency": ("FLOTTE", "amber"),
+}
+
+
+def _executive_extras(summary: dict, insights: list[dict], args: dict) -> dict:
+    """Rich layout data consumed by the branded PDF renderer."""
+    raw = {k["key"]: k for k in summary["kpis"]}
+    total = (raw.get("total_shipments", {}).get("value") or 0)
+
+    def share(key: str) -> float:
+        v = raw.get(key, {}).get("value") or 0
+        return round(v / total * 100, 1) if total else 0.0
+
+    accent_by_key = {
+        "total_shipments": "TEAL", "active_shipments": "BLUE", "delivered": "GREEN",
+        "otd_rate": "RED", "avg_delivery_time": "AMBER", "avg_customs_clearance": "AMBER",
+        "avg_transit_delay": "RED", "delayed_shipments": "RED",
+        "warehouse_utilization": "NAVY", "avg_cost": "NAVY",
+    }
+    from app.services.report_pdf import palette_hex
+    palette = palette_hex()
+
+    units = {"jours": "j"}
+    subs = {
+        "total_shipments": "sur 6 mois",
+        "active_shipments": f"{share('active_shipments')} % du volume",
+        "delivered": f"{share('delivered')} % du volume",
+        "otd_rate": "cible 90 %",
+        "avg_delivery_time": "bout en bout",
+        "avg_transit_delay": "vs. planifié",
+        "delayed_shipments": f"{share('delayed_shipments')} % du volume",
+        "warehouse_utilization": "capacité disponible",
+        "avg_cost": "toutes zones",
+    }
+    cards = []
+    for k in summary["kpis"]:
+        unit = units.get(k["unit"], k["unit"])
+        cards.append({
+            "label": k["label"], "value": k["value"], "unit": unit,
+            "sub": subs.get(k["key"], ""),
+            "accent": palette.get(accent_by_key.get(k["key"], "NAVY")),
+        })
+
+    otd = raw.get("otd_rate", {}).get("value")
+    if otd is None:
+        status, tone = None, "red"
+    elif otd < 75:
+        tone, text = "red", "Performance de livraison critique — cible non atteinte"
+    elif otd < 90:
+        tone, text = "amber", "Livraison à temps sous la cible de 90 %"
+    else:
+        tone, text = "green", "Performance conforme — cible de livraison atteinte"
+
+    highlights = []
+    for i in insights:
+        if i.get("metric") == "route_otd":
+            highlights.append({
+                "label": "Corridor le plus critique", "big": f"{i['current_value']} %".replace(".", ","),
+                "caption": i["description"], "tone": "red", "bar": min(i["current_value"] / 100, 1),
+            })
+        elif i.get("metric") == "customs_breach_rate":
+            v = round(i["current_value"], 1)
+            highlights.append({
+                "label": "Dépassement SLA douane (30j)", "big": f"{v} %".replace(".", ","),
+                "caption": i["description"], "tone": "red" if v > 10 else "amber",
+                "bar": min(v / 100, 1),
+            })
+
+    findings_rich = [
+        {"badge": _BADGES.get(i.get("metric"), ("CONSTAT", "blue"))[0],
+         "tone": _BADGES.get(i.get("metric"), ("", "blue"))[1],
+         "text": f"{i['title']} — {i['description']}"}
+        for i in insights[:4]
+    ]
+
+    start = args.get("start_date")
+    end = args.get("end_date")
+    period_label = period_friendly(start, end)
+
+    return {"kpi_cards": cards, "status": (tone, text), "highlights": highlights,
+            "findings_rich": findings_rich, "period_label": period_label}
+
+
+def period_friendly(start, end) -> str:
+    def fmt(d):
+        if not d:
+            return "aujourd'hui"
+        d = datetime.fromisoformat(d).date()
+        return f"{d.day} {MOIS_FR[d.month - 1]} {d.year}"
+    if start and end:
+        return f"{start and datetime.fromisoformat(start).strftime('%d')} {MOIS_FR[datetime.fromisoformat(start).month - 1]} {datetime.fromisoformat(start).year} → {datetime.fromisoformat(end).strftime('%d')} {MOIS_FR[datetime.fromisoformat(end).month - 1]} {datetime.fromisoformat(end).year}"
+    return "6 derniers mois"
 
 
 def _fmt_value(v) -> str:
@@ -256,61 +369,11 @@ def _export_xlsx(report_type: str, args: dict) -> Response:
 # ---------------------------------------------------------------------------
 
 def _export_pdf(report_type: str, args: dict) -> Response:
-    from reportlab.lib import colors
-    from reportlab.lib.pagesizes import A4
-    from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
-    from reportlab.lib.units import cm
-    from reportlab.platypus import (Paragraph, SimpleDocTemplate, Spacer,
-                                    Table, TableStyle)
+    from app.services.report_pdf import build_pdf
 
     report = build_report({"report_type": report_type, **args})
-
-    buf = io.BytesIO()
-    doc = SimpleDocTemplate(buf, pagesize=A4, topMargin=1.5 * cm, bottomMargin=1.5 * cm)
-    styles = getSampleStyleSheet()
-    title_style = ParagraphStyle("Title2", parent=styles["Title"], fontSize=18,
-                                 textColor=colors.HexColor("#0d1b3e"))
-    subtitle_style = ParagraphStyle("Sub", parent=styles["Normal"], fontSize=9,
-                                    textColor=colors.HexColor("#6b7a90"))
-    section_style = ParagraphStyle("Section", parent=styles["Heading2"], fontSize=12,
-                                   textColor=colors.HexColor("#0d1b3e"), spaceBefore=14)
-
-    story = [
-        Paragraph(report["title"], title_style),
-        Paragraph(f"Période : {report['period']} · Généré le {report['generated_at']}", subtitle_style),
-        Spacer(1, 12),
-        Paragraph("Indicateurs clés", section_style),
-    ]
-
-    kpi_rows = [[k["label"], f"{k['value']} {k['unit']}".strip()] for k in report["kpis"]]
-    if kpi_rows:
-        table = Table([["Indicateur", "Valeur"], *kpi_rows], colWidths=[10 * cm, 6 * cm])
-        table.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0d1b3e")),
-            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-            ("FONTSIZE", (0, 0), (-1, -1), 9),
-            ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#e3e8ef")),
-            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f8fafc")]),
-            ("TOPPADDING", (0, 0), (-1, -1), 5),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
-        ]))
-        story.append(table)
-
-    if report["findings"]:
-        story.append(Paragraph("Constats clés", section_style))
-        for f in report["findings"]:
-            story.append(Paragraph(f"• {f}", styles["Normal"]))
-
-    if report["alerts"]:
-        story.append(Paragraph("Alertes opérationnelles", section_style))
-        for a in report["alerts"]:
-            story.append(Paragraph(f"<b>[{a['severity']}]</b> {a['title']}<br/>{a['description']}",
-                                   styles["Normal"]))
-
-    doc.build(story)
-    buf.seek(0)
     return Response(
-        buf.read(),
+        build_pdf(report),
         mimetype="application/pdf",
         headers={"Content-Disposition": f"attachment; filename=logisight_{report_type}.pdf"},
     )
