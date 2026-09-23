@@ -91,6 +91,14 @@ const fmt = {
 
 const CHART_COLORS = ["#1e5eff", "#16a34a", "#f59e0b", "#dc2626", "#7c3aed", "#0284c7", "#64748b"];
 
+/* Clear placeholder states (spinner) before Plotly/Leaflet render into a div —
+   they append to the container without clearing existing children. */
+function prepPlotEl(el) {
+    const node = typeof el === "string" ? document.getElementById(el) : el;
+    if (node) node.innerHTML = "";
+    return node || el;
+}
+
 /* ==========================================================================
    Status / severity mapping (FR labels)
    ========================================================================== */

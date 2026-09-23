@@ -3,7 +3,7 @@
  */
 
 const PLOT = (el, data, layout = {}) =>
-    Plotly.newPlot(el, data, {
+    Plotly.newPlot(prepPlotEl(el), data, {
         margin: { l: 48, r: 12, t: 8, b: 40 },
         font: { family: "Inter, sans-serif", size: 11, color: "#6b7a90" },
         paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)",

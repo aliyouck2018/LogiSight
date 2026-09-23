@@ -14,7 +14,7 @@ const PLOT_DEFAULTS = {
 };
 
 function plot(el, data, layout = {}, config = {}) {
-    Plotly.newPlot(el, data, { ...PLOT_DEFAULTS, ...layout }, { displayModeBar: false, responsive: true, ...config });
+    Plotly.newPlot(prepPlotEl(el), data, { ...PLOT_DEFAULTS, ...layout }, { displayModeBar: false, responsive: true, ...config });
 }
 
 /* ------------------------------------------------------------------ */
@@ -181,8 +181,9 @@ async function loadMap() {
     const res = await API.get("/api/v1/map/routes");
     const { cities, routes } = res.data;
 
+    const mapEl = prepPlotEl("map-network");
     if (!mapObj) {
-        mapObj = L.map("map-network", { zoomControl: false, attributionControl: false });
+        mapObj = L.map(mapEl, { zoomControl: false, attributionControl: false });
         L.control.zoom({ position: "bottomright" }).addTo(mapObj);
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution: "© OpenStreetMap",
